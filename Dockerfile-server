@@ -1,0 +1,13 @@
+FROM golang:1.23
+
+WORKDIR /src/
+
+COPY common/ common/
+COPY pkg/ pkg/
+
+WORKDIR /src/pkg
+RUN go mod tidy
+
+EXPOSE 8080
+
+ENTRYPOINT ["go", "run", "cmd/main.go"]

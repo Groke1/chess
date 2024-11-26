@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=qwerty
+      - POSTGRES_DB=mydb
+    networks:
+      - net
+
+  stockfish:
+    build: engine/
+    container_name: stockfish
+    networks:
+      - net
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    container_name: server
+    ports:
+      - "8080:8080"
+    environment:
+      - DBHost=postgres
+      - DBPort=5432
+      - DBUser=admin
+      - DBPass=qwerty
+      - DBName=mydb
+      - DBMode=disable
+    networks:
+      - net
+    depends_on:
+      - postgres
+      - stockfish
+
+  telegram:
+    build:
+      context: .
+      dockerfile: Dockerfile-telegram
+    container_name: telegram
+    environment:
+      - TOKEN=${TOKEN}
+    networks:
+      - net
+    depends_on:
+      - server
+
+networks:
+  net:
+    driver: bridge
